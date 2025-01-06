@@ -32,22 +32,18 @@ A sample webhook service that validates feature flag configurations against orga
 brew tap azure/functions
 brew install azure-functions-core-tools@4
 ```
-3. Create Azure Function project
+3. Clone this repo
+
+
+**To create Azure function from scratch**
+Create Azure Function project
 ```
-# Create and initialize the project
-
 func init ld-azurefunction-api --javascript
-
-# Move into the project directory
 cd d-azurefunction-api
-
-# Create a new function using the HTTP trigger template
-
 func new --template "HTTP trigger" --name webhook
 
-
 ```
-4. Copy the files from this gist to the appropriate directories.
+
    
 
 ## Setup
@@ -62,6 +58,7 @@ func new --template "HTTP trigger" --name webhook
     "WEBHOOK_SECRET":"test"
    ```
 4. Load the `insominia-api-tests.json` in Insomnia to start testing.
+
    
 
 ## Request Format
