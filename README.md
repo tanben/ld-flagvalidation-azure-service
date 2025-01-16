@@ -12,6 +12,9 @@ A sample webhook service that validates feature flag configurations against orga
   * Slack notifications
   * Audit logging
 
+**Validation Pipeline**
+
+![img](./img/components.png)
 
 ### Endpoints
 |method|endpoint|description|
