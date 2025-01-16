@@ -1,10 +1,12 @@
+.vscode
+
 bin
 obj
 csx
 .vs
 edge
 Publish
-.vscode
+#mac
 .DS_Store
 
 *.user

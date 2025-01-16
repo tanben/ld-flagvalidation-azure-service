@@ -1,7 +1,10 @@
-const { app } = require('@azure/functions');
+const { app, HttpResponse } = require('@azure/functions');
 const schemas = require("../utils/schemas.js");
+const { faker } = require('@faker-js/faker');
 
-const {validateSchema, verifyWebhookSignature}=require('../utils/middleware.js');
+require('dotenv').config();
+
+const {validateSchema, verifyWebhookSignature, updateFlag}=require('../utils/middleware.js');
 const WEBHOOK_SECRET=  process.env.WEBHOOK_SECRET;
 const X_LD_HEADER=  process.env.X_LD_HEADER;
 
@@ -24,10 +27,18 @@ app.http('validate-flag', {
 });
 
 
+app.http('flags', {
+    methods: ['PATCH'],
+    authLevel: 'anonymous',
+    handler:handleTagsRequest
+});
+
+
 async function handleRequest (request, context) {
 
     const {headers} = request;
     const jsonBody = await request.json();
+    
 
     if (!verifyWebhookSignature({headers,secret:WEBHOOK_SECRET,  jsonBody, context}) ){
         return context.res;
@@ -42,4 +53,22 @@ async function handleRequest (request, context) {
     }
 
     return { jsonBody:  {isValid:true}};
+}
+
+
+async function handleTagsRequest (request, context) {
+    const jsonBody = await request.json();
+    const projectKey = request.query.get('projectKey');
+    const flagKey = request.query.get('flagKey');
+    const apiKey = process.env.ACCESS_TOKEN;
+
+    console.log(jsonBody);
+    console.log(request.query)
+
+    const {status, data}=  await updateFlag({field:'tags', projectKey, flagKey, value:faker.food.fruit(), apiKey})
+    context.res = new HttpResponse({
+        status : status,
+        jsonBody:data
+    })
+    return context.res
 }

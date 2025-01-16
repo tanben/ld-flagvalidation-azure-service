@@ -50,7 +50,7 @@ const currentVersionSchema={
 
   description: Joi.string()
     .required()
-    .min(1)
+    .min(5)
     .messages({
       'string.min': 'Description must be at least 5 characters',
       'any.required': 'Description is required'

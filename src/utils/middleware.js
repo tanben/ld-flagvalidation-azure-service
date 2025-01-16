@@ -1,5 +1,6 @@
 const { HttpResponse } = require('@azure/functions');
 const crypto = require('crypto');
+const axios = require('axios');
 
 
 function formatErrorMessage(error, details={}){
@@ -69,24 +70,88 @@ function verifyWebhookSignature({headers, secret,  jsonBody, context}){
 
 
 
+function getValFromFlagResourcePath(id, path){
+    // path example: "proj/sandbox;sandbox:env/production:flag/projidTestflag"
+    // id example: "proj" or "env" or "flag"
+
+    const pathObj = path.split(":").reduce( (acc,curr)=>{
+        let [k, v]= curr.split("/");
+        v = v.includes(";") ? v.split(";")[0]:v;
+        acc = {...acc, [k]:v};
+        return acc;
+    },{});
+    return pathObj[id];
+}
 function errorFlagDetails(jsonBody){
     if (!jsonBody){
         return {};
     }
     
-    const {currentVersion,  title, titleVerb} = jsonBody;
+    const {currentVersion,  title, titleVerb, target} = jsonBody;
     const {_maintainer:maintainer, name, kind,key, creationDate} = currentVersion;
+    const path =  target.resources[0];
     delete maintainer._links;
     
     return {
         maintainer, 
         flag:{
-            name, kind, key, title, titleVerb, creationDate
+            name, projectKey: getValFromFlagResourcePath("proj",path) ,kind, key, title, titleVerb, creationDate
         }
     };
 }
+async function updateFlag({field, projectKey, flagKey, value, apiKey}) {
+    
+    if (!field || field !="tags"){
+        const message=`Operation is not recognized for this feature flag field [${field}]`;
+        return {status:501,data:message};
+    }
+
+    const url = `https://app.launchdarkly.com/api/v2/flags/${projectKey}/${flagKey}`;
+    console.log(url)
+    const resp = await axios({
+      method: 'PATCH',
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': apiKey
+      },
+      data: {
+        patch: [
+          {
+            op: 'add',
+            path: '/tags/0',
+            value
+          }
+        ]
+      }
+    });
+  
+    // const data = resp.data;
+    // console.log(data);
+    return resp;
+  }
+
+async function deleteFlag({projectKey, flagKey, value, apiKey}) {
+    const url = `https://app.launchdarkly.com/api/v2/flags/${projectKey}/${flagKey}`;
+    console.log(url)
+    const resp = await axios({
+      method: 'DELETE',
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': apiKey
+      }
+    });
+  
+    // const data = resp.data;
+    // console.log(data);
+    return resp;
+}
+
 
 module.exports = {
     validateSchema,
-    verifyWebhookSignature
+    verifyWebhookSignature,
+    updateFlag,
+    deleteFlag
 };
