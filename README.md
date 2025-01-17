@@ -42,7 +42,7 @@ brew install azure-functions-core-tools@4
 Create Azure Function project
 ```bash
 func init ld-azurefunction-api --javascript
-cd d-azurefunction-api
+cd ld-azurefunction-api
 func new --template "HTTP trigger" --name webhook
 
 ```
@@ -56,9 +56,14 @@ func new --template "HTTP trigger" --name webhook
 	npm install
 	npm start
 	```
-3. Update the `local.settings.json` file with your webhook secret.
+3. Copy the `local.settings.example.json`  to `local.settings.json` and update the webhook secret you defined in LaunchDarkly.
    ```
     "WEBHOOK_SECRET":"test"
+   ```
+   For testing the update flag endpoint, update the API_ACESS_TOKEN property with your LaunchDarkly [API Access Tokens](https://docs.launchdarkly.com/home/account/api).
+
+   ```
+    "API_ACCESS_TOKEN":"YOUR_API_ACCESS_TOKEN"
    ```
 4. Load the `insominia-api-tests.json` in Insomnia to start testing.
 
